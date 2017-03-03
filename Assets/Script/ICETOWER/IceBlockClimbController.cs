@@ -17,9 +17,9 @@ public class IceBlockClimbController : MonoBehaviour {
 	void Update () {
         if (_charaStay)
         {
-            if(_player.velocity.y < -10.0f)
+            if(_player.velocity.y < -100.0f)
             {
-                _player.velocity = new Vector2(_player.velocity.x, -10.0f);
+                _player.velocity = new Vector2(_player.velocity.x, -100.0f);
             }
         }
 	}
@@ -42,8 +42,7 @@ public class IceBlockClimbController : MonoBehaviour {
                 {
                     _climbDir = 1;
                 }
-                //_player.transform.localScale = new Vector3(_climbDir, 1, 1);
-                
+
                 _charaStay = true;
             }
         }

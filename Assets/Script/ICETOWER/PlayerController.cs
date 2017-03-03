@@ -9,14 +9,27 @@ public class PlayerController : MonoBehaviour {
     /// <summary>プレイヤーの状態保持</summary>
     public static string _PlayerState = "wait";
 
+    /// <summary>プレイヤー標準スケール</summary>
+    private Vector3 _PlayerDefaultScale = Vector3.zero;
+
     /// <summary>移動方向</summary>
     private Vector3 _direction = Vector3.zero;
 
+    /// <summary>最大加速量</summary>
+    [SerializeField]
+    private float _MaxAccelaration = 360.0f;
+
+    /// <summary>最大加速量</summary>
+    [SerializeField]
+    private float _Accelaration = 350.0f;
+
     /// <summary>ジャンプ力</summary>
-    private float _jumpForce = 42.0f;
+    [SerializeField]
+    private float _jumpForce = 550.0f;
 
     /// <summary>壁ジャンプ力</summary>
-    private float _climbJumpForce = 33.0f;
+    [SerializeField]
+    private float _climbJumpForce = 330.0f;
 
     /// <summary>壁ジャンプ力横軸</summary>
     private float _climbJumpSideForce = 12.0f;
@@ -25,7 +38,8 @@ public class PlayerController : MonoBehaviour {
     private float _climbJumpWait = 0.08f;
 
     /// <summary>移動スピード</summary>
-    private float _Speed = 8.0f;
+    [SerializeField]
+    private float _Speed = 100.0f;
 
     /// <summary>加速度一時保存</summary>
     private Vector2 _tmpVelocity = Vector2.zero;
@@ -63,6 +77,7 @@ public class PlayerController : MonoBehaviour {
         _PlayerState = "wait";
         _playerAirFlag = false;
         _playerActiveFlag = true;
+        _PlayerDefaultScale = new Vector3(transform.localScale.x, transform.localScale.y, transform.localScale.z);
     }
 	
 	void Update ()
@@ -93,27 +108,28 @@ public class PlayerController : MonoBehaviour {
                 {
                     // 加算後の加速度が規定値を超える時は、加算を行わない
                     // かつ、キャラが壁に貼り付いていない時
-                    if (25.0f > Mathf.Abs(_player.velocity.x + (_direction.x * _Speed)))
+                    if (_MaxAccelaration > Mathf.Abs(_player.velocity.x + (_direction.x * _Speed)))
                     {
                         //_player.velocity += (Vector2)_direction * _Speed;                        
                         _player.velocity += new Vector2(_direction.x, 0.0f) * _Speed;
                     }
                     ReversalDir = true;
                 }
-                if (Mathf.Abs(_player.velocity.x) < 20.0f)
+                if (Mathf.Abs(_player.velocity.x) < _Accelaration)
                 {
                     // 加算後の加速度が規定値を超える時は、加算を行わない
                     // かつ、キャラが壁に貼り付いていない時
-                    if (25.0f > Mathf.Abs(_player.velocity.x + (_direction.x * _Speed)))
+                    if (_MaxAccelaration > Mathf.Abs(_player.velocity.x + (_direction.x * _Speed)))
                     {
                         //_player.velocity += (Vector2)_direction * _Speed;
                         _player.velocity += new Vector2(_direction.x, 0.0f) * _Speed;
                         tmp = _direction;
-                    }                    
+                    }
                 }
             }
             else
             {
+                //徐々に減速する
                 _player.velocity = Vector2.MoveTowards(_player.velocity, new Vector2(0, 0), 0.3f);
             }
 
@@ -152,7 +168,7 @@ public class PlayerController : MonoBehaviour {
             _playerAnimator.Play(Animator.StringToHash("walk"));
         }
         _direction = Vector3.left.normalized;
-        _player.transform.localScale = new Vector3(-1, 1, 1); 
+        _player.transform.localScale = new Vector3(-_PlayerDefaultScale.x, _PlayerDefaultScale.y, _PlayerDefaultScale.z); 
     }
 
     /// <summary>
@@ -166,7 +182,7 @@ public class PlayerController : MonoBehaviour {
             _playerAnimator.Play(Animator.StringToHash("walk"));
         }
         _direction = Vector3.right.normalized;
-        _player.transform.localScale = new Vector3(1, 1, 1);      
+        _player.transform.localScale = new Vector3(_PlayerDefaultScale.x, _PlayerDefaultScale.y, _PlayerDefaultScale.z);      
     }
 
     /// <summary>
@@ -174,7 +190,7 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     public void JumptoPlayer()
     {
-        if(!_playerAirFlag || (IceBlockClimbController._charaStay && _PlayerState == "jump"))
+        if (!_playerAirFlag || (IceBlockClimbController._charaStay && _PlayerState == "jump"))
         {
             _playerAirFlag = true;
             _PlayerState = "jump";
@@ -186,7 +202,7 @@ public class PlayerController : MonoBehaviour {
                 _player.velocity += new Vector2(0.0f, _jumpForce);
                 if (_PlayerState != "walk")
                 {
-                    _direction = Vector3.zero.normalized;
+                    //_direction = Vector3.zero.normalized;
                 }
             }
             // 壁ジャンプ
