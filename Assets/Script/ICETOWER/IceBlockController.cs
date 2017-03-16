@@ -11,8 +11,6 @@ public class IceBlockController : MonoBehaviour {
     private int rand = 0;
     private static int _setNum = 0;
 
-    private static bool FormFlag = false;
-
     private Quaternion _defaultQuaternion = new Quaternion(0, 0, 0, 0);
 
     #endregion
