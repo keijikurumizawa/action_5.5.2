@@ -35,17 +35,9 @@ public class PlayerAttackController : MonoBehaviour {
         _playerAnimator = GetComponent<Animator>();
         _player = GetComponent<Rigidbody2D>();
         StartCoroutine(ComboManage());
-
-        // 状態取得用
-        currentState = _playerAnimator.GetCurrentAnimatorStateInfo(0);
-        string a = currentState.fullPathHash.ToString();
-        string b = Animator.StringToHash("Blade Layer.wait").ToString();
     }
 	
 	void Update () {
-        //_playerAnimator.SetFloat("stateTime", stateTime);
-        //_playerAnimator.SetFloat("comboTime", comboTime);
-
         // 地面着地時に空中攻撃強制終了
         if(_playerAnimator.GetCurrentAnimatorStateInfo(0).fullPathHash == Animator.StringToHash("Blade Layer.Jump_Landing") )
         {
@@ -63,16 +55,14 @@ public class PlayerAttackController : MonoBehaviour {
             if (_playerAnimator.GetBool("Attack") || _playerAnimator.GetBool("Air_Attack"))
             {
                 AnimatorStateInfo currentState = _playerAnimator.GetCurrentAnimatorStateInfo(0);
-                stateTime = currentState.length;
 
-                _playerAnimator.SetFloat("stateTime", stateTime);
-                _playerAnimator.SetFloat("comboTime", comboTime);
+                stateTime = currentState.length;
 
                 comboTime += Time.deltaTime;
 
                 // 前フレームの状態ハッシュ値と現フレームの状態ハッシュ値が違う場合はコンボの入力時間を初期化する
                 // 攻撃アニメーションが変わった時に条件が一致する
-                if(stateHash != currentState.fullPathHash)
+                if (stateHash != currentState.fullPathHash)
                 {
                     comboTime = 0.0f;
                 }
@@ -87,9 +77,9 @@ public class PlayerAttackController : MonoBehaviour {
                 // 空中と地上攻撃で終了判断を変える
                 if (_playerAnimator.GetBool("Attack"))
                 {
-                    // アニメーションの時間よりコンボ入力時間が上回った時、攻撃終了と判断する
-                    if (comboTime >= stateTime)
-                    {   
+                    // 再生しているアニメーションが終了と同時に攻撃終了と判断する
+                    if (currentState.normalizedTime >= 1 && comboTime > 0)
+                    {
                         _playerAnimator.SetBool("Attack", false);
                         comboTime = 0.0f;
                         comboCnt = 0;
@@ -98,7 +88,7 @@ public class PlayerAttackController : MonoBehaviour {
 
                 if (_playerAnimator.GetBool("Air_Attack"))
                 {                    
-                    if (comboTime > stateTime && comboCnt > 0)
+                    if (currentState.normalizedTime >= 1 && comboCnt > 0 && comboTime > 0)
                     {
                         _playerAnimator.SetBool("Air_Attack", false);
                         PlayerController._PlayerState = "jump";
@@ -107,7 +97,7 @@ public class PlayerAttackController : MonoBehaviour {
                         comboTime = 0.0f;
                         comboCnt = 0;
                     }
-                }
+                }                
 
                 // フレームの最後で状態のハッシュ値を保存
                 stateHash = currentState.fullPathHash;
@@ -121,7 +111,6 @@ public class PlayerAttackController : MonoBehaviour {
                 reserveFlag = false;
                 _playerAnimator.ResetTrigger("ComboTrigger");
             }
-
             yield return null;
         }
     }
@@ -136,10 +125,8 @@ public class PlayerAttackController : MonoBehaviour {
         else
         {
             NormalAttack();
-            comboCnt++;
-        }        
-
-        
+        }
+        comboCnt++;
     }
 
     private void AirAttack()
@@ -157,8 +144,6 @@ public class PlayerAttackController : MonoBehaviour {
             {
                 reserveFlag = true;
             }
-
-            comboCnt++;
         }        
     }
 
